@@ -105,37 +105,47 @@ with tabs[2]:
     st.write("Comunicação, Trabalho em equipe, Resiliência, Criatividade, Proatividade.")
 
 with tabs[3]:
+    st.header("Análise de Dados")
+    st.subheader("1. Apresentação dos Dados")
+
+    uploaded_file = st.file_uploader("Carregue sua base de dados (CSV ou XLSX)", type=["csv", "xlsx"])
+    
+    df = None
+    
+    if uploaded_file is not None:
+        try:
+            if uploaded_file.name.endswith('.csv'):
+                df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
+            else:
+                df = pd.read_excel(uploaded_file, engine='openpyxl')
+            
+            if df is not None:
+                st.write("**Base de dados carregada:**")
+                st.write(df.head())  
+                
+                required_columns = {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS', 'NO_REGIAO'}
+                if not required_columns.issubset(df.columns):
+                    st.error("⚠️ O arquivo não contém colunas essenciais para análise.")
+            else:    
+                st.error("Falha ao ler o arquivo. Verifique o formato.")
+                
+        except Exception as e:
+            st.error(f"❌ Erro crítico: {str(e)}")
+            st.error("Dica: Verifique o delimitador do CSV ou a estrutura do Excel.")
+    else:
+        st.warning("📁 Nenhum arquivo foi carregado.")
         st.header("Análise de Dados")
-        st.subheader("1. Apresentação dos Dados")
 
-        uploaded_file = st.file_uploader("Carregue sua base de dados (formato CSV ou XLSX)", type=["csv", "xlsx"])
-        df = None
-        
-        if uploaded_file is not None:
-            try:
-                if uploaded_file.name.endswith(('.csv', '.xlsx')):
-                    if uploaded_file.name.endswith('.csv'):
-                        df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
-                    else:
-                        df = pd.read_excel(uploaded_file, engine='openpyxl') 
-                if df is not None:
-                    st.write("**Base de dados carregada:**")
-                    st.write(df.head())                
-            except Exception as e:
-                st.error(f"Erro ao carregar os dados: {e}")
-        else:
-            st.warning("Nenhum arquivo foi carregado.")
-
-            st.write("""
+        st.write("""
             Este conjunto de dados foi retirado do Censo Escolar da Educação Básica 2023.
             Ele contém informações sobre escolas, matrículas, infraestrutura, turmas e docentes em todas as regiões do Brasil.
             Abaixo está uma amostra dos dados e a categorização das variáveis:
             """)
 
-            st.write("Amostra dos Dados:")
-            st.write(df.head())
+        st.write("Amostra dos Dados:")
+        st.write(df.head())
 
-            st.markdown("""
+        st.markdown("""
             | **Variável**          | **Descrição**                              | **Tipo**             |
             |-----------------------|--------------------------------------------|----------------------|
             | `NO_REGIAO`           | Nome da região                             | Qualitativa Nominal  |
@@ -147,15 +157,15 @@ with tabs[3]:
             | `IN_AGUA_POTAVEL`     | Presença de água potável (Sim ou Não)      | Binária              |
             """)
 
-            st.write("**Perguntas de Análise:**")
-            st.write("""
+        st.write("**Perguntas de Análise:**")
+        st.write("""
             1. Como estão distribuídas as escolas por regiões e estados?
             2. Qual a disponibilidade de infraestrutura básica (banheiros e água potável)?
             3. Qual a correlação entre o número de salas utilizadas e o número de matrículas?
             4. Como se comportam as distribuições das variáveis chave?
             """)
 
-            st.subheader("2. Medidas Centrais e Análise Inicial")
+        st.subheader("2. Medidas Centrais e Análise Inicial")
         
         if df is not None:
             if {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS'}.issubset(df.columns):
