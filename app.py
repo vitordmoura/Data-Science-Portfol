@@ -110,29 +110,32 @@ with tabs[3]:
 
     uploaded_file = st.file_uploader("Carregue sua base de dados (CSV ou XLSX)", type=["csv", "xlsx"])
     
-    df = None
-    
     if uploaded_file is not None:
         try:
-            if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
-            else:
-                df = pd.read_excel(uploaded_file, engine='openpyxl')
-            if df:
-                st.write("**Base de dados carregada:**")
-                st.write(df.head())  
+            if uploaded_file.name.endswith(('.csv', '.xlsx')):
+                if uploaded_file.name.endswith('.csv'):
+                    # Leitura universal do CSV (delimitador automático)
+                    df = pd.read_csv(uploaded_file, encoding='latin1', sep=None, engine='python', low_memory=False)
+                else:
+                    df = pd.read_excel(uploaded_file, engine='openpyxl')
                 
+                st.write("**Base de dados carregada:**")
+                st.write(df.head())  # Linha 143 corrigida
+                
+                # Verificação de colunas obrigatórias
                 required_columns = {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS', 'NO_REGIAO'}
                 if not required_columns.issubset(df.columns):
-                    st.error("⚠️ O arquivo não contém colunas essenciais para análise.")
-            else:    
-                st.error("Falha ao ler o arquivo. Verifique o formato.")
-                
+                    st.error("⚠️ O arquivo não contém as colunas necessárias!")
+                else:
+                    # ... (código de análise)
+                    st.error("Formato inválido. Use CSV ou XLSX.")
+        
+        except pd.errors.EmptyDataError:
+            st.error("❌ O arquivo está vazio.")
         except Exception as e:
-            st.error(f"❌ Erro crítico: {str(e)}")
-            st.error("Dica: Verifique o delimitador do CSV ou a estrutura do Excel.")
+            st.error(f"❌ Erro fatal: {str(e)}")
     else:
-        st.warning("📁 Nenhum arquivo foi carregado.")
+        st.warning("📁 Nenhum arquivo carregado.")
         st.header("Análise de Dados")
 
         st.write("""
@@ -140,10 +143,9 @@ with tabs[3]:
             Ele contém informações sobre escolas, matrículas, infraestrutura, turmas e docentes em todas as regiões do Brasil.
             Abaixo está uma amostra dos dados e a categorização das variáveis:
             """)
-        df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
-
-        st.write("Amostra dos Dados:")
-        st.write(df.head())
+        if df is not None:
+            st.write("Amostra dos Dados:")
+            st.write(df.head())
 
         st.markdown("""
             | **Variável**          | **Descrição**                              | **Tipo**             |
