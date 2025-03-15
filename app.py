@@ -219,88 +219,91 @@ if df is not None:
 
 st.subheader("Distribuição Poisson: Matrículas por Escola")
 
-if 'QT_MAT_BAS' in df.columns:
+if df is not None:
+    if 'QT_MAT_BAS' in df.columns:
 
-    media_matriculas = df['QT_MAT_BAS'].mean()
+        media_matriculas = df['QT_MAT_BAS'].mean()
 
- 
-    x = np.arange(0, int(media_matriculas) * 2) 
-    y = poisson.pmf(x, media_matriculas)
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.bar(x, y, color='#87CEEB', alpha=0.8, edgecolor='black')
-    ax.set_title("Distribuição Poisson: Matrículas por Escola", fontsize=16, fontweight='bold')
-    ax.set_xlabel("Quantidade de Matrículas", fontsize=12)
-    ax.set_ylabel("Probabilidade", fontsize=12)
-    ax.grid(axis='y', linestyle='--', linewidth=0.5, color='lightgray')
-    st.pyplot(fig)
-
-    st.write(f"""
-    **Média de Matrículas por Escola:** {media_matriculas:.2f}
-
-    O gráfico apresenta a distribuição Poisson das matrículas por escola, com uma média de 265,05 matrículas por escola, 
-    representando o valor esperado e o parâmetro $\lambda$. O eixo X mostra a quantidade de matrículas, 
-    enquanto o eixo Y indica a probabilidade associada. A distribuição é assimétrica, com maior probabilidade para 
-    valores próximos à média, diminuindo para números muito altos ou baixos. Este modelo auxilia na análise da frequência 
-    de escolas com diferentes tamanhos de matrícula, destacando que a maioria está concentrada ao redor da média, mas há 
-    variações extremas.
-    """)
-else:
-    st.warning("A coluna 'QT_MAT_BAS' não está disponível no conjunto de dados.")
     
-st.subheader("Distribuição Normal: Matrículas por Região")
-
-if {'QT_MAT_BAS', 'NO_REGIAO'}.issubset(df.columns):
-        matriculas_por_regiao = df.groupby('NO_REGIAO')['QT_MAT_BAS'].sum()
-        media = matriculas_por_regiao.mean()
-        desvio_padrao = matriculas_por_regiao.std()
-
-        x = np.linspace(media - 4*desvio_padrao, media + 4*desvio_padrao, 500)
-        y = norm.pdf(x, media, desvio_padrao)
+        x = np.arange(0, int(media_matriculas) * 2) 
+        y = poisson.pmf(x, media_matriculas)
 
         fig, ax = plt.subplots(figsize=(10, 6))
-        ax.plot(x, y, color='blue', linewidth=2)
-        ax.fill_between(x, y, color='lightblue', alpha=0.5)
-        ax.axvline(media, color='red', linestyle='--', label='Média')
-        ax.set_title("Distribuição Normal: Matrículas por Região", fontsize=16)
-        ax.set_xlabel("Quantidade de Matrículas")
-        ax.set_ylabel("Densidade de Probabilidade")
+        ax.bar(x, y, color='#87CEEB', alpha=0.8, edgecolor='black')
+        ax.set_title("Distribuição Poisson: Matrículas por Escola", fontsize=16, fontweight='bold')
+        ax.set_xlabel("Quantidade de Matrículas", fontsize=12)
+        ax.set_ylabel("Probabilidade", fontsize=12)
+        ax.grid(axis='y', linestyle='--', linewidth=0.5, color='lightgray')
         st.pyplot(fig)
 
-        st.write(f"**Média:** {media:.2f} | **Desvio Padrão:** {desvio_padrao:.2f}")
-        st.write("""
-        O gráfico ilustra a distribuição normal do número de matrículas por região, caracterizado por uma curva em forma 
-        de sino, a qual representa a concentração de valores ao redor da média. A linha pontilhada vermelha central 
-        indica a média de 9.460.926,40 matrículas, refletindo que a maioria das regiões apresenta números próximos 
-        a esse valor. O desvio padrão, calculado em 6.476.699,29, demonstra uma variação significativa, sugerindo 
-        discrepâncias expressivas no número de matrículas entre regiões. No eixo horizontal (X),
-        observa-se a quantidade de matrículas, enquanto o eixo vertical (Y) apresenta a densidade de probabilidade associada. 
-        A área sombreada sob a curva simboliza a totalidade dos dados, indicando a probabilidade de ocorrência de diferentes valores. 
-        Por fim, a maior concentração de matrículas ocorre ao redor da média, enquanto regiões extremas exibem valores atípicos, 
-        evidenciados pelas caudas alongadas da curva.
+        st.write(f"""
+        **Média de Matrículas por Escola:** {media_matriculas:.2f}
+
+        O gráfico apresenta a distribuição Poisson das matrículas por escola, com uma média de 265,05 matrículas por escola, 
+        representando o valor esperado e o parâmetro $\lambda$. O eixo X mostra a quantidade de matrículas, 
+        enquanto o eixo Y indica a probabilidade associada. A distribuição é assimétrica, com maior probabilidade para 
+        valores próximos à média, diminuindo para números muito altos ou baixos. Este modelo auxilia na análise da frequência 
+        de escolas com diferentes tamanhos de matrícula, destacando que a maioria está concentrada ao redor da média, mas há 
+        variações extremas.
         """)
-        st.subheader("Distribuição Binomial: Presença de Banheiros")
+    else:
+        st.warning("A coluna 'QT_MAT_BAS' não está disponível no conjunto de dados.")
+        
+st.subheader("Distribuição Normal: Matrículas por Região")
 
-if 'IN_BANHEIRO' in df.columns:
-        sucesso = df['IN_BANHEIRO'].value_counts().get(1, 0)
-        total = len(df['IN_BANHEIRO'])
-        probabilidade = sucesso / total
+if df is not None:
 
-        n = 10  
-        x = np.arange(0, n + 1)
-        y = binom.pmf(x, n, probabilidade)
+    if {'QT_MAT_BAS', 'NO_REGIAO'}.issubset(df.columns):
+            matriculas_por_regiao = df.groupby('NO_REGIAO')['QT_MAT_BAS'].sum()
+            media = matriculas_por_regiao.mean()
+            desvio_padrao = matriculas_por_regiao.std()
 
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.bar(x, y, color='#3CB371', edgecolor='black', alpha=0.7)
-        ax.set_title("Distribuição Binomial: Banheiros Disponíveis", fontsize=14)
-        ax.set_xlabel("Número de Escolas")
-        ax.set_ylabel("Probabilidade")
-        st.pyplot(fig)
+            x = np.linspace(media - 4*desvio_padrao, media + 4*desvio_padrao, 500)
+            y = norm.pdf(x, media, desvio_padrao)
 
-        st.write(f"**Probabilidade de uma escola ter banheiros:** {probabilidade:.2%}")
-        st.write("""
-        Esta análise reflete as chances de diferentes quantidades de escolas (em um grupo de 10) apresentarem banheiros disponíveis.
-        """)
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.plot(x, y, color='blue', linewidth=2)
+            ax.fill_between(x, y, color='lightblue', alpha=0.5)
+            ax.axvline(media, color='red', linestyle='--', label='Média')
+            ax.set_title("Distribuição Normal: Matrículas por Região", fontsize=16)
+            ax.set_xlabel("Quantidade de Matrículas")
+            ax.set_ylabel("Densidade de Probabilidade")
+            st.pyplot(fig)
+
+            st.write(f"**Média:** {media:.2f} | **Desvio Padrão:** {desvio_padrao:.2f}")
+            st.write("""
+            O gráfico ilustra a distribuição normal do número de matrículas por região, caracterizado por uma curva em forma 
+            de sino, a qual representa a concentração de valores ao redor da média. A linha pontilhada vermelha central 
+            indica a média de 9.460.926,40 matrículas, refletindo que a maioria das regiões apresenta números próximos 
+            a esse valor. O desvio padrão, calculado em 6.476.699,29, demonstra uma variação significativa, sugerindo 
+            discrepâncias expressivas no número de matrículas entre regiões. No eixo horizontal (X),
+            observa-se a quantidade de matrículas, enquanto o eixo vertical (Y) apresenta a densidade de probabilidade associada. 
+            A área sombreada sob a curva simboliza a totalidade dos dados, indicando a probabilidade de ocorrência de diferentes valores. 
+            Por fim, a maior concentração de matrículas ocorre ao redor da média, enquanto regiões extremas exibem valores atípicos, 
+            evidenciados pelas caudas alongadas da curva.
+            """)
+            st.subheader("Distribuição Binomial: Presença de Banheiros")
+
+    if 'IN_BANHEIRO' in df.columns:
+            sucesso = df['IN_BANHEIRO'].value_counts().get(1, 0)
+            total = len(df['IN_BANHEIRO'])
+            probabilidade = sucesso / total
+
+            n = 10  
+            x = np.arange(0, n + 1)
+            y = binom.pmf(x, n, probabilidade)
+
+            fig, ax = plt.subplots(figsize=(8, 5))
+            ax.bar(x, y, color='#3CB371', edgecolor='black', alpha=0.7)
+            ax.set_title("Distribuição Binomial: Banheiros Disponíveis", fontsize=14)
+            ax.set_xlabel("Número de Escolas")
+            ax.set_ylabel("Probabilidade")
+            st.pyplot(fig)
+
+            st.write(f"**Probabilidade de uma escola ter banheiros:** {probabilidade:.2%}")
+            st.write("""
+            Esta análise reflete as chances de diferentes quantidades de escolas (em um grupo de 10) apresentarem banheiros disponíveis.
+            """)
 
 
 
