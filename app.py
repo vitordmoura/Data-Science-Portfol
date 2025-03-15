@@ -117,14 +117,14 @@ with tabs[3]:
                     if uploaded_file.name.endswith('.csv'):
                         df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
                     else:
-                        df = pd.read_excel(uploaded_file, engine='openpyxl')  # Engine adicionado
-
-                st.write("**Base de dados carregada pelo upload do usuário:**")
-                st.write(df.head())
+                        df = pd.read_excel(uploaded_file, engine='openpyxl') 
+                if df is not None:
+                    st.write("**Base de dados carregada:**")
+                    st.write(df.head())                
             except Exception as e:
                 st.error(f"Erro ao carregar os dados: {e}")
         else:
-            st.warning("Nenhum arquivo foi carregado. Por favor, carregue um arquivo CSV ou XLSX.")
+            st.warning("Nenhum arquivo foi carregado.")
 
             st.write("""
             Este conjunto de dados foi retirado do Censo Escolar da Educação Básica 2023.
