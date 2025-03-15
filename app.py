@@ -143,9 +143,9 @@ with tabs[3]:
             Ele contém informações sobre escolas, matrículas, infraestrutura, turmas e docentes em todas as regiões do Brasil.
             Abaixo está uma amostra dos dados e a categorização das variáveis:
             """)
-        if df is not None:
-            st.write("Amostra dos Dados:")
-            st.write(df.head())
+        df = None
+        st.write("Amostra dos Dados:")
+        st.write(df.head())
 
         st.markdown("""
             | **Variável**          | **Descrição**                              | **Tipo**             |
