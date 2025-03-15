@@ -108,7 +108,7 @@ with tabs[3]:
     st.subheader("1. Apresentação dos Dados")
 
     uploaded_file = st.file_uploader("Carregue sua base de dados (formato CSV)", type=["csv", "xlsx"])
-
+df = None
 if uploaded_file is not None:
     try:
         df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';')
