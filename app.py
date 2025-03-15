@@ -113,8 +113,11 @@ with tabs[3]:
     
     if uploaded_file is not None:
         try:
-            if uploaded_file.name.endswith('.csv', 'xlsx'):
-                df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
+            if uploaded_file.name.endswith(('.csv', '.xlsx')):
+                if uploaded_file.name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
+            else:
+                df = pd.read_excel(uploaded_file)
 
             st.write("**Base de dados carregada pelo upload do usuário:**")
             st.write(df.head())
