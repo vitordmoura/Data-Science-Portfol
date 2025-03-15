@@ -140,7 +140,7 @@ with tabs[3]:
             Ele contém informações sobre escolas, matrículas, infraestrutura, turmas e docentes em todas as regiões do Brasil.
             Abaixo está uma amostra dos dados e a categorização das variáveis:
             """)
-        df = pd.read_excel(uploaded_file, engine='openpyxl')
+        df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
 
         st.write("Amostra dos Dados:")
         st.write(df.head())
