@@ -2,4 +2,6 @@ streamlit
 pandas                
 numpy                           
 matplotlib             
-scipy      
+scipy    
+openpyxl==3.2.0
+
