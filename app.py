@@ -108,16 +108,26 @@ with tabs[3]:
     st.subheader("1. Apresentação dos Dados")
 
     uploaded_file = st.file_uploader("Carregue sua base de dados (formato CSV)", type=["csv", "xlsx"])
-df = None
-if uploaded_file is not None:
-    try:
-        df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';')
-        st.write("**Base de dados carregada pelo upload do usuário:**")
-        st.write(df.head())
-    except Exception as e:
-        st.error(f"Erro ao carregar os dados: {e}")
-        df = None
+    df = None
+    
+    if uploaded_file is not None:
+        try:
+                # Verifica o tipo do arquivo e o processa adequadamente
+            if uploaded_file.name.endswith('.csv'):
+                df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';')
+            elif uploaded_file.name.endswith('.xlsx'):
+                df = pd.read_excel(uploaded_file)
 
+            # Mostra os dados carregados
+            st.write("**Base de dados carregada pelo upload do usuário:**")
+            st.write(df.head())
+        except Exception as e:
+             st.error(f"Erro ao carregar os dados: {e}")
+    else:
+        st.warning("Nenhum arquivo foi carregado. Por favor, carregue um arquivo CSV ou XLSX.")
+
+    if df is not None:
+        
         st.write("""
         Este conjunto de dados foi retirado do Censo Escolar da Educação Básica 2023.
         Ele contém informações sobre escolas, matrículas, infraestrutura, turmas e docentes em todas as regiões do Brasil.
@@ -146,8 +156,6 @@ if uploaded_file is not None:
         3. Qual a correlação entre o número de salas utilizadas e o número de matrículas?
         4. Como se comportam as distribuições das variáveis chave?
         """)
-    except Exception as e:
-        st.write(f"Erro ao carregar os dados: {e}")
 
         st.subheader("2. Medidas Centrais e Análise Inicial")
 
