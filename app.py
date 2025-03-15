@@ -121,6 +121,9 @@ with tabs[3]:
                 
                 st.write("**Base de dados carregada:**")
                 st.write(df.head())  # Linha 143 corrigida
+
+                st.write("Amostra dos Dados:")
+                st.write(df.head())
                 
                 # Verificação de colunas obrigatórias
                 required_columns = {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS', 'NO_REGIAO'}
@@ -142,10 +145,7 @@ with tabs[3]:
             Este conjunto de dados foi retirado do Censo Escolar da Educação Básica 2023.
             Ele contém informações sobre escolas, matrículas, infraestrutura, turmas e docentes em todas as regiões do Brasil.
             Abaixo está uma amostra dos dados e a categorização das variáveis:
-            """)
-        df = None
-        st.write("Amostra dos Dados:")
-        st.write(df.head())
+            """)        
 
         st.markdown("""
             | **Variável**          | **Descrição**                              | **Tipo**             |
