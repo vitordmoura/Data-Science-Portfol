@@ -118,8 +118,7 @@ with tabs[3]:
                 df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
             else:
                 df = pd.read_excel(uploaded_file, engine='openpyxl')
-            
-            if df is not None:
+            if df:
                 st.write("**Base de dados carregada:**")
                 st.write(df.head())  
                 
@@ -141,6 +140,7 @@ with tabs[3]:
             Ele contém informações sobre escolas, matrículas, infraestrutura, turmas e docentes em todas as regiões do Brasil.
             Abaixo está uma amostra dos dados e a categorização das variáveis:
             """)
+        df = pd.read_excel(uploaded_file, engine='openpyxl')
 
         st.write("Amostra dos Dados:")
         st.write(df.head())
@@ -167,8 +167,9 @@ with tabs[3]:
 
         st.subheader("2. Medidas Centrais e Análise Inicial")
         
-        if df is not None:
-            if {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS'}.issubset(df.columns):
+        df = pd.read_excel(uploaded_file, engine='openpyxl')
+        
+        if {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS'}.issubset(df.columns):
 
                 media = df['QT_MAT_BAS'].mean()
                 mediana = df['QT_MAT_BAS'].median()
@@ -201,9 +202,9 @@ with tabs[3]:
                 indicando variações significativas. Conclui-se que escolas com melhor infraestrutura frequentemente suportam maior quantidade de matrículas, 
                 reforçando a importância de investimentos nesse setor.
                 """)
-            st.subheader("Distribuição de Matrículas por Região")
+        st.subheader("Distribuição de Matrículas por Região")
 
-            if df is not None and {'QT_MAT_BAS', 'NO_REGIAO'}.issubset(df.columns):
+        if df is not None and {'QT_MAT_BAS', 'NO_REGIAO'}.issubset(df.columns):
 
                 matriculas_por_regiao = df.groupby('NO_REGIAO')['QT_MAT_BAS'].sum()
 
@@ -222,7 +223,7 @@ with tabs[3]:
                 que a região centro-oeste é a região com menos matrículas e a região sudeste com maior detenção
                 de matriculas escolares.
                 """)
-            else:
+        else:
                 st.warning("As colunas necessárias ('QT_MAT_BAS', 'NO_REGIAO') não estão disponíveis no conjunto de dados.")
 
         st.subheader("Distribuição Poisson: Matrículas por Escola")
