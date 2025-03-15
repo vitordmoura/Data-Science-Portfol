@@ -8,6 +8,7 @@ from scipy.stats import norm
 from scipy.stats import binom
 from scipy.stats import poisson
 
+minha_string = r"caminho\exemplo"
 
 st.markdown(
     """
@@ -112,13 +113,9 @@ with tabs[3]:
     
     if uploaded_file is not None:
         try:
-                # Verifica o tipo do arquivo e o processa adequadamente
-            if uploaded_file.name.endswith('.csv'):
+            if uploaded_file.name.endswith('.csv', 'xlsx'):
                 df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
-            elif uploaded_file.name.endswith('.xlsx'):
-                df = pd.read_excel(uploaded_file)
 
-            # Mostra os dados carregados
             st.write("**Base de dados carregada pelo upload do usuário:**")
             st.write(df.head())
         except Exception as e:
@@ -248,6 +245,7 @@ if df is not None:
         st.warning("A coluna 'QT_MAT_BAS' não está disponível no conjunto de dados.")
         
 st.subheader("Distribuição Normal: Matrículas por Região")
+minha_string = r"caminho\exemplo"
 
 if df is not None:
 
