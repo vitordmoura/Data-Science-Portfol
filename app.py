@@ -115,7 +115,7 @@ with tabs[3]:
             if uploaded_file.name.endswith(('.csv', '.xlsx')):
                 if uploaded_file.name.endswith('.csv'):
                     # Leitura universal do CSV (delimitador automático)
-                    df = pd.read_csv(uploaded_file, encoding='latin1', sep=None, engine='python', low_memory=False)
+                    df = pd.read_csv(uploaded_file, encoding='latin1', sep=None, engine='python')
                 else:
                     df = pd.read_excel(uploaded_file, engine='openpyxl')
                 
