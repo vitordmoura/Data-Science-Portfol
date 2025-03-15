@@ -114,7 +114,7 @@ with tabs[3]:
         try:
                 # Verifica o tipo do arquivo e o processa adequadamente
             if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';')
+                df = pd.read_csv(uploaded_file, encoding='latin1', delimiter=';', low_memory=False)
             elif uploaded_file.name.endswith('.xlsx'):
                 df = pd.read_excel(uploaded_file)
 
@@ -236,16 +236,14 @@ if df is not None:
         ax.grid(axis='y', linestyle='--', linewidth=0.5, color='lightgray')
         st.pyplot(fig)
 
-        st.write(f"""
-        **Média de Matrículas por Escola:** {media_matriculas:.2f}
+        st.write(f""" **Média de Matrículas por Escola:** {media_matriculas:.2f}"""
 
-        O gráfico apresenta a distribuição Poisson das matrículas por escola, com uma média de 265,05 matrículas por escola, 
-        representando o valor esperado e o parâmetro $\lambda$. O eixo X mostra a quantidade de matrículas, 
+        """O gráfico apresenta a distribuição Poisson das matrículas por escola, com uma média de 265,05 matrículas por escola, 
+        representando o valor esperado e o parâmetro lambda. O eixo X mostra a quantidade de matrículas, 
         enquanto o eixo Y indica a probabilidade associada. A distribuição é assimétrica, com maior probabilidade para 
         valores próximos à média, diminuindo para números muito altos ou baixos. Este modelo auxilia na análise da frequência 
         de escolas com diferentes tamanhos de matrícula, destacando que a maioria está concentrada ao redor da média, mas há 
-        variações extremas.
-        """)
+        variações extremas.""")
     else:
         st.warning("A coluna 'QT_MAT_BAS' não está disponível no conjunto de dados.")
         
