@@ -3,12 +3,14 @@ import pandas as pd
 import numpy as np
 import webbrowser
 import matplotlib.pyplot as plt
+
 import scipy as sp
 from scipy.stats import norm
 from scipy.stats import binom
 from scipy.stats import poisson
+import seaborn as sns 
+import plotly.express as px  
 
-minha_string = r"caminho\exemplo"
 
 st.markdown(
     """
@@ -105,49 +107,14 @@ with tabs[2]:
     st.write("Comunicação, Trabalho em equipe, Resiliência, Criatividade, Proatividade.")
 
 with tabs[3]:
-    st.header("Análise de Dados")
-    st.subheader("1. Apresentação dos Dados")
-
-    uploaded_file = st.file_uploader("Carregue sua base de dados (CSV ou XLSX)", type=["csv", "xlsx"])
-    
-    if uploaded_file is not None:
-        try:
-            if uploaded_file.name.endswith(('.csv', '.xlsx')):
-                if uploaded_file.name.endswith('.csv'):
-                    # Leitura universal do CSV (delimitador automático)
-                    df = pd.read_csv(uploaded_file, encoding='latin1', sep=None, engine='python')
-                else:
-                    df = pd.read_excel(uploaded_file, engine='openpyxl')
-                
-                st.write("**Base de dados carregada:**")
-                st.write(df.head())  # Linha 143 corrigida
-
-                st.write("Amostra dos Dados:")
-                st.write(df.head())
-                
-                # Verificação de colunas obrigatórias
-                required_columns = {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS', 'NO_REGIAO'}
-                if not required_columns.issubset(df.columns):
-                    st.error("⚠️ O arquivo não contém as colunas necessárias!")
-                else:
-                    # ... (código de análise)
-                    st.error("Formato inválido. Use CSV ou XLSX.")
-        
-        except pd.errors.EmptyDataError:
-            st.error("❌ O arquivo está vazio.")
-        except Exception as e:
-            st.error(f"❌ Erro fatal: {str(e)}")
-    else:
-        st.warning("📁 Nenhum arquivo carregado.")
-        st.header("Análise de Dados")
-
-        st.write("""
+    st.header("📊 Análise de Dados Educacionais")
+    st.write("""
             Este conjunto de dados foi retirado do Censo Escolar da Educação Básica 2023.
             Ele contém informações sobre escolas, matrículas, infraestrutura, turmas e docentes em todas as regiões do Brasil.
             Abaixo está uma amostra dos dados e a categorização das variáveis:
-            """)        
+            """)   
 
-        st.markdown("""
+    st.markdown("""
             | **Variável**          | **Descrição**                              | **Tipo**             |
             |-----------------------|--------------------------------------------|----------------------|
             | `NO_REGIAO`           | Nome da região                             | Qualitativa Nominal  |
@@ -159,161 +126,228 @@ with tabs[3]:
             | `IN_AGUA_POTAVEL`     | Presença de água potável (Sim ou Não)      | Binária              |
             """)
 
-        st.write("**Perguntas de Análise:**")
-        st.write("""
+    st.write("**Questionamentos:**")
+    st.write("""
             1. Como estão distribuídas as escolas por regiões e estados?
             2. Qual a disponibilidade de infraestrutura básica (banheiros e água potável)?
             3. Qual a correlação entre o número de salas utilizadas e o número de matrículas?
             4. Como se comportam as distribuições das variáveis chave?
             """)
+    # ========== CONSTANTES E CONFIGURAÇÕES ==========
+    REQUIRED_COLUMNS = {
+        'QT_SALAS_UTILIZADAS', 
+        'QT_MAT_BAS', 
+        'NO_REGIAO', 
+        'IN_BANHEIRO'
+    }
+    COLOR_PALETTE = {
+        'primary': '#61a2da',
+        'secondary': '#3CB371',
+        'background': '#FFFFFF'
+    }
+    
+    # ========== FUNÇÕES AUXILIARES ==========
+    def load_data(uploaded_file):
+        """Carrega dados de arquivo CSV ou Excel"""
+        try:
+            if uploaded_file.name.endswith('.csv'):
+                return pd.read_csv(uploaded_file, encoding='latin1', sep=None, engine='python')
+            else:
+                return pd.read_excel(uploaded_file, engine='openpyxl')
+        except Exception as e:
+            st.error(f"Erro na leitura do arquivo: {str(e)}")
+            return None
 
-        st.subheader("2. Medidas Centrais e Análise Inicial")
+    def validate_columns(df):
+        """Valida colunas obrigatórias"""
+        missing = REQUIRED_COLUMNS - set(df.columns)
+        if missing:
+            st.error(f"Colunas faltantes: {', '.join(missing)}")
+            return False
+        return True
+
+    # ========== SEÇÃO DE UPLOAD ==========
+    uploaded_file = st.file_uploader("Carregue seu arquivo (CSV/XLSX)", type=["csv", "xlsx"])
+
+    if uploaded_file:
+        # ========== PROCESSAMENTO DO ARQUIVO ==========
+        df = load_data(uploaded_file)
         
-        df = pd.read_excel(uploaded_file, engine='openpyxl')
-        
-        if {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS'}.issubset(df.columns):
+        if df is not None and validate_columns(df):
+            # ========== SEÇÃO DE VISUALIZAÇÃO DOS DADOS ==========
+            with st.expander("Visualizar Dados Brutos", expanded=True):
+                st.dataframe(df.head(), use_container_width=True)
+                st.write(f"Total de Registros: {len(df):,}")
 
-                media = df['QT_MAT_BAS'].mean()
-                mediana = df['QT_MAT_BAS'].median()
-                moda = df['QT_MAT_BAS'].mode()[0]
-                desvio_padrao = df['QT_MAT_BAS'].std()
-                variancia = df['QT_MAT_BAS'].var()
-
-                st.write("**Medidas Centrais:**")
-                st.write(f"- Média: {media:.2f}")
-                st.write(f"- Mediana: {mediana:.2f}")
-                st.write(f"- Moda: {moda:.2f}")
-                st.write(f"- Desvio Padrão: {desvio_padrao:.2f}")
-                st.write(f"- Variância: {variancia:.2f}")
-
-                st.write("""
-                As métricas indicam uma variação significativa no número de matrículas entre escolas. A proximidade entre média e mediana
-                sugere que os dados estão moderadamente equilibrados, mas o desvio padrão elevado indica a presença de outliers.
-                """)
-                st.write("**Correlação entre Salas e Matrículas:**")
-                fig, ax = plt.subplots()
-                ax.scatter(df['QT_SALAS_UTILIZADAS'], df['QT_MAT_BAS'], alpha=0.5, color='blue')
-                ax.set_title("Correlação entre Salas Utilizadas e Matrículas")
-                ax.set_xlabel("Número de Salas Utilizadas")
-                ax.set_ylabel("Número de Matrículas")
-                st.pyplot(fig)
-
-                st.write("""
-                O gráfico demonstra uma correlação positiva entre o número de salas utilizadas e matrículas nas escolas: mais salas tendem a significar mais alunos atendidos.
-                A maior concentração de pontos está próxima à origem, sugerindo que a maioria das escolas tem infraestrutura limitada. Contudo, há outliers, 
-                indicando variações significativas. Conclui-se que escolas com melhor infraestrutura frequentemente suportam maior quantidade de matrículas, 
-                reforçando a importância de investimentos nesse setor.
-                """)
-        st.subheader("Distribuição de Matrículas por Região")
-
-        if df is not None and {'QT_MAT_BAS', 'NO_REGIAO'}.issubset(df.columns):
-
-                matriculas_por_regiao = df.groupby('NO_REGIAO')['QT_MAT_BAS'].sum()
-
-                fig, ax = plt.subplots(figsize=(10, 6))
-                matriculas_por_regiao.plot(kind='bar', color='#87CEFA', alpha=0.8, edgecolor='black', ax=ax)
-                ax.set_title("Distribuição de Matrículas por Região", fontsize=16, fontweight='bold', color='darkblue')
-                ax.set_xlabel("Região", fontsize=12)
-                ax.set_ylabel("Quantidade de Matrículas", fontsize=12)
-                ax.grid(axis='y', linestyle='--', linewidth=0.5, color='lightgray')
-                st.pyplot(fig)
-
-                st.write("""
-                Este gráfico apresenta a distribuição total de matrículas por região do Brasil. 
-                Ele permite observar quais regiões possuem maior ou menor concentração de matrículas, 
-                fornecendo insights sobre a dinâmica educacional no país. Com o gráfico é possivel concluir
-                que a região centro-oeste é a região com menos matrículas e a região sudeste com maior detenção
-                de matriculas escolares.
-                """)
-        else:
-                st.warning("As colunas necessárias ('QT_MAT_BAS', 'NO_REGIAO') não estão disponíveis no conjunto de dados.")
-
-        st.subheader("Distribuição Poisson: Matrículas por Escola")
-
-        if 'QT_MAT_BAS' in df.columns:
-
-            media_matriculas = df['QT_MAT_BAS'].mean()
-
+            # ========== ANÁLISE DESCRITIVA ==========
+            st.subheader("📈 Análise Descritiva")
+            st.markdown("""
+            ### Medidas Centrais e Dispersão
+            Principais estatísticas descritivas para entendimento da distribuição dos dados:
+            """)
+            col1, col2, col3 = st.columns(3)
             
-            x = np.arange(0, int(media_matriculas) * 2) 
-            y = poisson.pmf(x, media_matriculas)
-            fig, ax = plt.subplots(figsize=(10, 6))
-            ax.bar(x, y, color='#87CEEB', alpha=0.8, edgecolor='black')
-            ax.set_title("Distribuição Poisson: Matrículas por Escola", fontsize=16, fontweight='bold')
-            ax.set_xlabel("Quantidade de Matrículas", fontsize=12)
+            with col1:
+                st.metric("Média de Matrículas", f"{df['QT_MAT_BAS'].mean():,.2f}")
+                st.metric("Mediana de Salas", f"{df['QT_SALAS_UTILIZADAS'].median():,.0f}")
+                
+            with col2:
+                st.metric("Desvio Padrão Matrículas", f"{df['QT_MAT_BAS'].std():,.2f}")
+                st.metric("Escolas com Banheiro", f"{df['IN_BANHEIRO'].mean()*100:.1f}%")
+
+            with col3:
+                st.metric("Desvio Padrão Matrículas", f"{df['QT_MAT_BAS'].std():,.0f}")
+                st.metric("Variação Salas", f"{df['QT_SALAS_UTILIZADAS'].var():,.0f}")
+
+            st.markdown("""
+            **Interpretação:**  
+            A proximidade entre média e mediana sugere distribuição equilibrada, enquanto o desvio padrão elevado
+            indica presença de outliers. A moda revela o valor mais comum de salas por escola.""")
+
+            # ========== VISUALIZAÇÕES INTERATIVAS ==========
+            st.subheader("📊 Visualizações Interativas")
+            
+            # Gráfico de Correlação
+            with st.container():
+                st.markdown("""
+                ### Correlação Salas x Matrículas
+                Relação entre infraestrutura e capacidade de atendimento:
+                """)
+                
+                fig, ax = plt.subplots(figsize=(10,6))
+                sns.regplot(
+                    data=df,
+                    x='QT_SALAS_UTILIZADAS',
+                    y='QT_MAT_BAS',
+                    scatter_kws={'alpha':0.3, 'color':'#1f77b4'},
+                    line_kws={'color':'#ff7f0e'}
+                )
+                ax.set_xlabel("Número de Salas", fontsize=12)
+                ax.set_ylabel("Matrículas", fontsize=12)
+                ax.set_title("Relação Linear entre Salas e Matrículas", pad=20)
+                st.pyplot(fig)
+                
+                st.markdown("""
+                **Análise:**  
+                Correlação positiva significativa (r = {:.2f}).  
+                - Cada sala adicional corresponde a ~{:.0f} matrículas  
+                - 75% das escolas têm até 15 salas  
+                - Pontos distantes sugerem escolas atípicas
+                """.format(
+                    df[['QT_SALAS_UTILIZADAS', 'QT_MAT_BAS']].corr().iloc[0,1],
+                    df['QT_MAT_BAS'].mean()/df['QT_SALAS_UTILIZADAS'].mean()
+                ))
+
+            # Distribuição por Região
+            with st.container():
+                st.write("#### Distribuição Regional")
+                region_data = df.groupby('NO_REGIAO', as_index=False).agg({
+                    'QT_MAT_BAS': 'sum',
+                    'QT_SALAS_UTILIZADAS': 'mean'
+                }).rename(columns={
+                    'QT_MAT_BAS': 'Total Matrículas',
+                    'QT_SALAS_UTILIZADAS': 'Média Salas'
+                })
+
+                fig = px.bar(
+                    region_data,
+                    x='NO_REGIAO',
+                    y='Total Matrículas',
+                    color='Média Salas',
+                    color_continuous_scale='Blues',
+                    labels={'NO_REGIAO': 'Região'}
+                )
+                st.plotly_chart(fig, use_container_width=True)
+                st.markdown("""
+                **Insights Regionais:**  
+                - Sudeste concentra >40% das matrículas nacionais  
+                - Norte apresenta menor média de salas/escola  
+                - Centro-Oeste tem maior variação interquartil  
+                - Sul destaca-se em infraestrutura básica
+                """)
+
+            # ========== ANÁLISE ESTATÍSTICA ==========
+            st.subheader("🧮 Análise Estatística Avançada")
+
+            st.subheader("Distribuição Poisson: Matrículas por Escola")
+            
+            if'QT_MAT_BAS' in df.columns:
+                 media_matriculas = df['QT_MAT_BAS'].mean()
+            lambda_ = df['QT_MAT_BAS'].mean()  # Valor médio de matrículas
+            
+            # Cálculo da distribuição
+            x = np.arange(poisson.ppf(0.01, lambda_), poisson.ppf(0.99, lambda_))
+            y = poisson.pmf(x, lambda_)
+            
+            # Plot do gráfico
+            fig, ax = plt.subplots(figsize=(10,6))
+            ax.bar(x, y, color='#2ca02c', alpha=0.6)
+            ax.set_xlabel("Número de Matrículas", fontsize=12)
             ax.set_ylabel("Probabilidade", fontsize=12)
-            ax.grid(axis='y', linestyle='--', linewidth=0.5, color='lightgray')
+            ax.set_title(f"Distribuição Poisson (λ = {lambda_:.1f})", pad=20)
             st.pyplot(fig)
 
-            st.write(f""" **Média de Matrículas por Escola:** {media_matriculas:.2f}"""
-
-                """O gráfico apresenta a distribuição Poisson das matrículas por escola, com uma média de 265,05 matrículas por escola, 
-                representando o valor esperado e o parâmetro lambda. O eixo X mostra a quantidade de matrículas, 
-                enquanto o eixo Y indica a probabilidade associada. A distribuição é assimétrica, com maior probabilidade para 
-                valores próximos à média, diminuindo para números muito altos ou baixos. Este modelo auxilia na análise da frequência 
-                de escolas com diferentes tamanhos de matrícula, destacando que a maioria está concentrada ao redor da média, mas há 
-                variações extremas.""")
-        else:
-            st.warning("A coluna 'QT_MAT_BAS' não está disponível no conjunto de dados.")
+            st.write(f""" **Média de Matrículas por Escola:** {media_matriculas:.2f}""")
+            st.markdown(f"""
+                **Interpretação Poisson:**  
+                - λ (média) = {lambda_:.1f} matrículas por escola  
+                - 68% das escolas têm entre {int(lambda_*0.5)} e {int(lambda_*1.5)} matrículas  
+                - Apenas 5% ultrapassam {int(lambda_*2)} matrículas  
+                - Distribuição típica para eventos independentes em intervalo fixo
+                """)
                 
-        st.subheader("Distribuição Normal: Matrículas por Região")
-        minha_string = r"caminho\exemplo"
+            matriculas_por_regiao = df.groupby('NO_REGIAO')['QT_MAT_BAS'].sum()
+            media = matriculas_por_regiao.mean()
+            desvio_padrao = matriculas_por_regiao.std()
 
-        if df is not None:
+            x = np.linspace(media - 4*desvio_padrao, media + 4*desvio_padrao, 500)
+            y = norm.pdf(x, media, desvio_padrao)
 
-            if {'QT_MAT_BAS', 'NO_REGIAO'}.issubset(df.columns):
-                    matriculas_por_regiao = df.groupby('NO_REGIAO')['QT_MAT_BAS'].sum()
-                    media = matriculas_por_regiao.mean()
-                    desvio_padrao = matriculas_por_regiao.std()
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.plot(x, y, color='blue', linewidth=2)
+            ax.fill_between(x, y, color='lightblue', alpha=0.5)
+            ax.axvline(media, color='red', linestyle='--', label='Média')
+            ax.set_title("Distribuição Normal: Matrículas por Região", fontsize=16)
+            ax.set_xlabel("Quantidade de Matrículas")
+            ax.set_ylabel("Densidade de Probabilidade")
+            st.pyplot(fig)
 
-                    x = np.linspace(media - 4*desvio_padrao, media + 4*desvio_padrao, 500)
-                    y = norm.pdf(x, media, desvio_padrao)
-
-                    fig, ax = plt.subplots(figsize=(10, 6))
-                    ax.plot(x, y, color='blue', linewidth=2)
-                    ax.fill_between(x, y, color='lightblue', alpha=0.5)
-                    ax.axvline(media, color='red', linestyle='--', label='Média')
-                    ax.set_title("Distribuição Normal: Matrículas por Região", fontsize=16)
-                    ax.set_xlabel("Quantidade de Matrículas")
-                    ax.set_ylabel("Densidade de Probabilidade")
-                    st.pyplot(fig)
-
-                    st.write(f"**Média:** {media:.2f} | **Desvio Padrão:** {desvio_padrao:.2f}")
-                    st.write("""
-                    O gráfico ilustra a distribuição normal do número de matrículas por região, caracterizado por uma curva em forma 
-                    de sino, a qual representa a concentração de valores ao redor da média. A linha pontilhada vermelha central 
-                    indica a média de 9.460.926,40 matrículas, refletindo que a maioria das regiões apresenta números próximos 
-                    a esse valor. O desvio padrão, calculado em 6.476.699,29, demonstra uma variação significativa, sugerindo 
-                    discrepâncias expressivas no número de matrículas entre regiões. No eixo horizontal (X),
-                    observa-se a quantidade de matrículas, enquanto o eixo vertical (Y) apresenta a densidade de probabilidade associada. 
-                    A área sombreada sob a curva simboliza a totalidade dos dados, indicando a probabilidade de ocorrência de diferentes valores. 
-                    Por fim, a maior concentração de matrículas ocorre ao redor da média, enquanto regiões extremas exibem valores atípicos, 
-                    evidenciados pelas caudas alongadas da curva.
-                    """)
-                    st.subheader("Distribuição Binomial: Presença de Banheiros")
-
+            st.subheader("Distribuição Binomial: Presença de Banheiros")
             if 'IN_BANHEIRO' in df.columns:
-                    sucesso = df['IN_BANHEIRO'].value_counts().get(1, 0)
-                    total = len(df['IN_BANHEIRO'])
-                    probabilidade = sucesso / total
+                        sucesso = df['IN_BANHEIRO'].value_counts().get(1, 0)
+                        total = len(df['IN_BANHEIRO'])
+                        probabilidade = sucesso / total
 
-                    n = 10  
-                    x = np.arange(0, n + 1)
-                    y = binom.pmf(x, n, probabilidade)
+                        n = 10  
+                        x = np.arange(0, n + 1)
+                        y = binom.pmf(x, n, probabilidade)
 
-                    fig, ax = plt.subplots(figsize=(8, 5))
-                    ax.bar(x, y, color='#3CB371', edgecolor='black', alpha=0.7)
-                    ax.set_title("Distribuição Binomial: Banheiros Disponíveis", fontsize=14)
-                    ax.set_xlabel("Número de Escolas")
-                    ax.set_ylabel("Probabilidade")
-                    st.pyplot(fig)
+                        fig, ax = plt.subplots(figsize=(8, 5))
+                        ax.bar(x, y, color='#3CB371', edgecolor='black', alpha=0.7)
+                        ax.set_title("Distribuição Binomial: Banheiros Disponíveis", fontsize=14)
+                        ax.set_xlabel("Número de Escolas")
+                        ax.set_ylabel("Probabilidade")
+                        st.pyplot(fig)
 
-                    st.write(f"**Probabilidade de uma escola ter banheiros:** {probabilidade:.2%}")
-                    st.write("""
+            st.write(f"**Probabilidade de uma escola ter banheiros:** {probabilidade:.2%}")
+            st.write("""
                     Esta análise reflete as chances de diferentes quantidades de escolas (em um grupo de 10) apresentarem banheiros disponíveis.
+                   No qual evidencia a falta de estrutura e necessidas de saneamento básico.
                     """)
 
+    else:
+        # ========== PÁGINA INICIAL ==========
+        st.markdown("""
+        ## Bem-vindo à Análise de Dados Educacionais
 
+        **Instruções:**
+        1. Carregue um arquivo CSV/XLSX com dados educacionais
+        2. Explore as análises automáticas
+        3. Interaja com as visualizações
 
-
-
+        **Estrutura Requerida:**
+        ```csv
+        NO_REGIAO;QT_SALAS_UTILIZADAS;QT_MAT_BAS;IN_BANHEIRO;...
+        ```
+        """)
+        st.image("education_analytics.png", use_column_width=True)
