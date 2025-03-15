@@ -160,7 +160,6 @@ with tabs[3]:
         st.subheader("2. Medidas Centrais e Análise Inicial")
     
 if df is not None:
-
     if {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS'}.issubset(df.columns):
 
         media = df['QT_MAT_BAS'].mean()
@@ -195,28 +194,28 @@ if df is not None:
         reforçando a importância de investimentos nesse setor.
         """)
     st.subheader("Distribuição de Matrículas por Região")
+if df is not None:
+    if df is not None and {'QT_MAT_BAS', 'NO_REGIAO'}.issubset(df.columns):
 
-if df is not None and {'QT_MAT_BAS', 'NO_REGIAO'}.issubset(df.columns):
+        matriculas_por_regiao = df.groupby('NO_REGIAO')['QT_MAT_BAS'].sum()
 
-    matriculas_por_regiao = df.groupby('NO_REGIAO')['QT_MAT_BAS'].sum()
+        fig, ax = plt.subplots(figsize=(10, 6))
+        matriculas_por_regiao.plot(kind='bar', color='#87CEFA', alpha=0.8, edgecolor='black', ax=ax)
+        ax.set_title("Distribuição de Matrículas por Região", fontsize=16, fontweight='bold', color='darkblue')
+        ax.set_xlabel("Região", fontsize=12)
+        ax.set_ylabel("Quantidade de Matrículas", fontsize=12)
+        ax.grid(axis='y', linestyle='--', linewidth=0.5, color='lightgray')
+        st.pyplot(fig)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    matriculas_por_regiao.plot(kind='bar', color='#87CEFA', alpha=0.8, edgecolor='black', ax=ax)
-    ax.set_title("Distribuição de Matrículas por Região", fontsize=16, fontweight='bold', color='darkblue')
-    ax.set_xlabel("Região", fontsize=12)
-    ax.set_ylabel("Quantidade de Matrículas", fontsize=12)
-    ax.grid(axis='y', linestyle='--', linewidth=0.5, color='lightgray')
-    st.pyplot(fig)
-
-    st.write("""
-    Este gráfico apresenta a distribuição total de matrículas por região do Brasil. 
-    Ele permite observar quais regiões possuem maior ou menor concentração de matrículas, 
-    fornecendo insights sobre a dinâmica educacional no país. Com o gráfico é possivel concluir
-    que a região centro-oeste é a região com menos matrículas e a região sudeste com maior detenção
-    de matriculas escolares.
-    """)
-else:
-    st.warning("As colunas necessárias ('QT_MAT_BAS', 'NO_REGIAO') não estão disponíveis no conjunto de dados.")
+        st.write("""
+        Este gráfico apresenta a distribuição total de matrículas por região do Brasil. 
+        Ele permite observar quais regiões possuem maior ou menor concentração de matrículas, 
+        fornecendo insights sobre a dinâmica educacional no país. Com o gráfico é possivel concluir
+        que a região centro-oeste é a região com menos matrículas e a região sudeste com maior detenção
+        de matriculas escolares.
+        """)
+    else:
+        st.warning("As colunas necessárias ('QT_MAT_BAS', 'NO_REGIAO') não estão disponíveis no conjunto de dados.")
 
 st.subheader("Distribuição Poisson: Matrículas por Escola")
 
