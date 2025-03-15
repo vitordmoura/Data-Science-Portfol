@@ -158,6 +158,8 @@ with tabs[3]:
         """)
 
         st.subheader("2. Medidas Centrais e Análise Inicial")
+    
+if df is not None:
 
     if {'QT_SALAS_UTILIZADAS', 'QT_MAT_BAS'}.issubset(df.columns):
 
